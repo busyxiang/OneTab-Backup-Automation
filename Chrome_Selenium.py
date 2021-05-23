@@ -9,7 +9,8 @@ from datetime import date
 EXTENSION_ID = "chphlpgkkbolifaimnlloiipkdnihall"
 
 USER_PROFILE = os.environ['USERPROFILE']
-LOCAL_DESTINATION_PATH = os.path.join(USER_PROFILE, "Documents/OneTab-Backup/")
+LOCAL_DESTINATION_FILE_PATH = os.path.join(
+    USER_PROFILE, "Documents", "OneTab-Backup.txt")
 
 CHROME_DIR = os.path.join(USER_PROFILE, 'AppData', 'Local', 'Google', 'Chrome')
 
@@ -21,13 +22,11 @@ TEMP_DIR = os.path.join(CHROME_DIR, 'temp',)
 TEMP_CHROME_USER_DATA = os.path.join(TEMP_DIR, "Default")
 
 
-def check_need_to_update(dirPath, latestData):
-    if os.path.exists(dirPath) and len(os.listdir(dirPath)) > 0:
-        files = os.listdir(dirPath)
-        lastUpdateFile = open(os.path.join(
-            dirPath, files[-1]), 'r', encoding="utf-8")
+def check_need_to_update(filepath, latestData):
+    if os.path.exists(filepath):
+        exisitingFile = open(filepath, 'r', encoding="utf-8")
 
-        diffResult = difflib.Differ().compare(lastUpdateFile.read(), latestData)
+        diffResult = difflib.Differ().compare(exisitingFile.read(), latestData)
 
         # List Comprehension
         return [x for x in diffResult if x[0] in ('+', '-')]
@@ -36,13 +35,8 @@ def check_need_to_update(dirPath, latestData):
 
 
 def create_or_update_backup_file(latestData):
-    today = date.today().strftime("%d-%m-%y")
-    filename = os.path.join(LOCAL_DESTINATION_PATH, "{}.txt".format(today))
-
-    utils.create_directory_if_not_exists(LOCAL_DESTINATION_PATH)
-
-    if check_need_to_update(LOCAL_DESTINATION_PATH, latestData):
-        file = open(filename, 'w', encoding="utf-8")
+    if check_need_to_update(LOCAL_DESTINATION_FILE_PATH, latestData):
+        file = open(LOCAL_DESTINATION_FILE_PATH, 'w', encoding="utf-8")
         file.write(latestData)
         file.close()
 
@@ -51,6 +45,7 @@ def create_or_update_backup_file(latestData):
         print("No new changes")
 
 
+utils.remove_directory_if_exists(TEMP_DIR)
 utils.copy_directory(DEFAULT_CHROME_USER_DATA_DIR, TEMP_CHROME_USER_DATA)
 
 TEMP_LOCAL_EXTENSION_SETTINGS_EXTENSION_DIR = os.path.join(
