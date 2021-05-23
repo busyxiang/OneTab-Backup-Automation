@@ -6,7 +6,7 @@ The is **Python** automation script to backup your **OneTab** data
 
 - Python
 - Selenium
-- Windows & TaskScheduler (Not sure how OS do it)
+- Windows & TaskScheduler (Not sure how other OS do it)
 
 ## Upcoming
 
