@@ -4,7 +4,6 @@ import difflib
 import utils
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from datetime import date
 
 EXTENSION_ID = "chphlpgkkbolifaimnlloiipkdnihall"
 
@@ -16,7 +15,7 @@ CHROME_DIR = os.path.join(USER_PROFILE, 'AppData', 'Local', 'Google', 'Chrome')
 
 CHROME_USER_DATA_DIR = os.path.join(CHROME_DIR, 'User Data')
 DEFAULT_CHROME_USER_DATA_DIR = os.path.join(
-    CHROME_DIR, "User Data", "Default", "Default")
+    CHROME_DIR, "User Data", "Default")
 
 TEMP_DIR = os.path.join(CHROME_DIR, 'temp',)
 TEMP_CHROME_USER_DATA = os.path.join(TEMP_DIR, "Default")
@@ -46,20 +45,31 @@ def create_or_update_backup_file(latestData):
 
 
 utils.remove_directory_if_exists(TEMP_DIR)
-utils.copy_directory(DEFAULT_CHROME_USER_DATA_DIR, TEMP_CHROME_USER_DATA)
 
 TEMP_LOCAL_EXTENSION_SETTINGS_EXTENSION_DIR = os.path.join(
     TEMP_CHROME_USER_DATA, "Local Extension Settings", EXTENSION_ID)
-
-utils.copy_all_files_in_directory(os.path.join(CHROME_USER_DATA_DIR, "Default", "Local Extension Settings",
-                                  EXTENSION_ID), TEMP_LOCAL_EXTENSION_SETTINGS_EXTENSION_DIR, ["LOCK"])
 
 chrome_options = ChromeOptions()
 chrome_options.add_argument(
     "user-data-dir={}".format(TEMP_DIR))
 chrome_options.add_extension('./onetab.crx')
 
+#==================== Generate a default blank profile ==============================
 driver = webdriver.Chrome('chromedriver.exe', options=chrome_options)
+
+time.sleep(1)  # Let the user actually see something!
+
+driver.close()
+
+#===================== Copy OneTab Data =============================================
+print('Start Copying OneTab Data')
+utils.copy_all_files_in_directory(os.path.join(CHROME_USER_DATA_DIR, "Default", "Local Extension Settings",
+                                  EXTENSION_ID), TEMP_LOCAL_EXTENSION_SETTINGS_EXTENSION_DIR, ["LOCK"])
+print('Complete Copied')
+
+#===================== Backup OneTab Data =============================================
+driver = webdriver.Chrome('chromedriver.exe', options=chrome_options)
+
 driver.get("chrome-extension://chphlpgkkbolifaimnlloiipkdnihall/import-export.html")
 
 time.sleep(1)  # Let the user actually see something!
